@@ -2,7 +2,7 @@
 
 > A hierarchical planner–executor research system with a **shared blackboard memory** and **citation provenance that fails validation when broken**.
 
-`hma` decomposes a question into a subtask DAG, fans executors over a corpus, publishes findings to a shared memory that deduplicates and detects conflicts, and finally emits a report where **every claim must resolve to a verbatim source span** — or the run exits nonzero. Zero dependencies, deterministic, ~0.1 s full test suite, no API keys needed to try the whole pipeline.
+`hma` decomposes a question into a subtask DAG, fans executors over a corpus, publishes findings to a shared memory that deduplicates and detects conflicts, and finally emits a report where **every claim must resolve to a verbatim source span** — or the run exits nonzero. Zero dependencies, deterministic, a full test suite that runs in well under a second, no API keys needed to try the whole pipeline.
 
 ```
 question ──► Planner ──► DAG waves ──► Executors ──► Synthesizer ──► verify()
@@ -32,21 +32,32 @@ hma session --n 3     # related questions on one persistent board; watch reuse k
 
 Verified output (offline `CorpusLLM` backend):
 
-```
+<!-- RUN:START -->
+```text
 === how does shared memory help multi-agent teams and what do citations need?
   - Shared memory lets parallel agents avoid repeating each other's work.  [r1:d2]
-  - Verifiable citations require each claim to link to a verbatim source span.  [r2:d4]
-  ...
+  - Without deduplication, multi-agent teams multiply their token bill.  [r2:d2]
+  - Synthesis of 2 findings over 2 sources.  [r1:d2, r2:d2]
   verification: VERIFIED: every claim resolves to a verbatim corpus span
+  llm_calls=6 skipped_by_memory=0 memory={'entries': 4, 'hits': 0, 'misses': 0, 'hit_rate': 0.0, 'conflicts': 3}
 ```
+<!-- RUN:END -->
 
 Session stats show the memory economy: questions 1–2 spend 6 model calls each; the third question, which revisits an already-covered topic, needs 5:
 
+<!-- SESSION:START -->
+```text
+llm_calls=6 skipped_by_memory=0 memory={'entries': 4, 'hits': 0, 'misses': 0, 'hit_rate': 0.0, 'conflicts': 3}
+llm_calls=12 skipped_by_memory=0 memory={'entries': 4, 'hits': 0, 'misses': 0, 'hit_rate': 0.0, 'conflicts': 3}
+llm_calls=17 skipped_by_memory=1 memory={'entries': 4, 'hits': 1, 'misses': 0, 'hit_rate': 1.0, 'conflicts': 4}
+blackboard after session: 4 findings, hit_rate=1.00, conflicts=4
 ```
-llm_calls=6  skipped_by_memory=0   # q1: research 4 topics
-llm_calls=12 skipped_by_memory=0   # q2: 4 new topics
-llm_calls=17 skipped_by_memory=1   # q3: 1 topic reused from the blackboard
-```
+<!-- SESSION:END -->
+
+Both blocks are the stdout of those two commands, spliced in by
+`python experiments/make_readme.py --write` and pinned by
+`tests/test_readme_output_is_real.py` - a sample output no code can print is worse than
+no sample output at all.
 
 ## Bring your own model
 
@@ -72,7 +83,14 @@ assert res.verification.ok
 
 ## Tests prove the guarantees, not the happy path
 
-21 tests, 0.1 s: DAG cycle/dep/duplicate rejection · memory dedup + conflict detection · `cite()` refusing stitched quotes · `verify()` catching orphan claims and spans that drift after corpus edits · the orchestrator rejecting a scripted hallucinated quote · cross-question memory reuse.
+26 tests, ~0.2 s: DAG cycle/dep/duplicate rejection · memory dedup + conflict detection · `cite()` refusing stitched quotes · `verify()` catching orphan claims and spans that drift after corpus edits · the orchestrator rejecting a scripted hallucinated quote · cross-question memory reuse · the two sample-output blocks above re-generated from the CLI and compared byte for byte.
+
+Regenerate the blocks after changing the pipeline, so the docs cannot keep a transcript the
+code no longer produces:
+
+```bash
+python experiments/make_readme.py --write
+```
 
 ## Roadmap
 
