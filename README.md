@@ -83,7 +83,7 @@ assert res.verification.ok
 
 ## Tests prove the guarantees, not the happy path
 
-26 tests, ~0.2 s: DAG cycle/dep/duplicate rejection · memory dedup + conflict detection · `cite()` refusing stitched quotes · `verify()` catching orphan claims and spans that drift after corpus edits · the orchestrator rejecting a scripted hallucinated quote · cross-question memory reuse · the two sample-output blocks above re-generated from the CLI and compared byte for byte.
+26 tests, stdlib-only and offline: DAG cycle/dep/duplicate rejection · memory dedup + conflict detection · `cite()` refusing stitched quotes · `verify()` catching orphan claims and spans that drift after corpus edits · the orchestrator rejecting a scripted hallucinated quote · cross-question memory reuse · the two sample-output blocks above re-generated from the CLI and compared byte for byte.
 
 Regenerate the blocks after changing the pipeline, so the docs cannot keep a transcript the
 code no longer produces:
