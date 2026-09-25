@@ -12,6 +12,8 @@ question ──► Planner ──► DAG waves ──► Executors ──► Syn
                                       topic reuse (skip calls)    any edit breaks it
 ```
 
+![ci](https://github.com/Lesereingrape/hier-memo-agents/actions/workflows/ci.yml/badge.svg)
+
 ## What this is not
 
 Not another "agents chatting with each other" demo. The three hard problems in multi-agent systems are coordinated, measured, and tested here:
